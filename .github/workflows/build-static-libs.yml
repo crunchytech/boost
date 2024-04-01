@@ -7,6 +7,8 @@ on:
 
 env:  
   GITHUB_REF_NAME: ${{ github.ref_name }}
+  BUILD_TOOLSET: msvc-14.3
+  BUILD_LINK_MODE: static
 
 jobs:
   Build-Static-Libs:
@@ -29,6 +31,16 @@ jobs:
         run: |
           (Get-Content .gitmodules).replace('url = ..', 'url = https://github.com/boostorg') | Set-Content .gitmodules
 
-      - name: Clone Repository & Submodules
+      - name: Download Submodule(s)
         run: |
           git submodule update --init --recursive
+
+      - name: Configure Boost
+        run: |
+          .\bootstrap.bat
+
+      - name: Build Boost
+        run: |
+          .\b2 --with-thread toolset=$Env:BUILD_TOOLSET link=$Env:BUILD_LINK_MODE threading=multi runtime-link=$Env:BUILD_LINK_MODE variant=release stage
+
+      
