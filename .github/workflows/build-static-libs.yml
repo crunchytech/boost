@@ -41,6 +41,26 @@ jobs:
 
       - name: Build Boost
         run: |
-          .\b2 --with-thread toolset=$Env:BUILD_TOOLSET link=$Env:BUILD_LINK_MODE threading=multi runtime-link=$Env:BUILD_LINK_MODE variant=release stage
+          .\b2 --with-thread address-model=64 toolset=$Env:BUILD_TOOLSET link=$Env:BUILD_LINK_MODE threading=multi runtime-link=$Env:BUILD_LINK_MODE variant=release stage
 
-      
+      - name: List Files
+        run: |
+          dir "."
+          dir ".\stage"
+          dir ".\stage\lib"
+
+      - name: Create Release Package (Zip)
+        run: |
+          Compress-Archive -Path ".\stage\lib\*" -DestinationPath "boost-static-$Env:BUILD_VER.zip"
+  
+      - name: Publish Release
+        run: |
+          gh release create "$Env:BUILD_VER" "boost-static-$Env:BUILD_VER.zip"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  
+      - name: Remove Tag
+        run: |
+          git push --delete origin "$Env:GITHUB_REF_NAME"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
