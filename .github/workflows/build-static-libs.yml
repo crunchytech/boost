@@ -23,4 +23,12 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          submodules: true
+          ref: boost-${{ env.BUILD_VER }}
+
+      - name: Fix Submodule URL
+        run: |
+          (Get-Content .gitmodules).replace('url = ..', 'url = https://github.com/boostorg') | Set-Content .gitmodules
+
+      - name: Clone Repository & Submodules
+        run: |
+          git submodule update --init --recursive
