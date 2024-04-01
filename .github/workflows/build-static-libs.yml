@@ -1,0 +1,27 @@
+name: Build Static Libs (Release/x64) 
+
+on:
+  push:
+    tags:
+      - build_*
+
+env:  
+  GITHUB_REF_NAME: ${{ github.ref_name }}
+
+jobs:
+  Build-Static-Libs:
+    runs-on: windows-latest
+    steps:
+      - name: Set Build Version
+        run: |
+          echo ("BUILD_VER=" + $Env:GITHUB_REF_NAME.replace('build_', '')) >> $Env:GITHUB_ENV
+
+      - name: Show Me
+        run: |
+          echo "$Env:BUILD_VER"
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          ref: boost-${{ env.BUILD_VER }}
+          submodules: true
