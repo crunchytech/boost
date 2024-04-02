@@ -1,3 +1,4 @@
+# gh --repo crunchytech/opencv release list --json tagName --jq '.[].tagName'
 name: Build Static Libs (Release/x64) 
 
 on:
@@ -42,7 +43,7 @@ jobs:
 
       - name: Build Boost
         run: |
-          .\b2 --with-thread address-model=64 toolset=$Env:BUILD_TOOLSET link=$Env:BUILD_LINK_MODE threading=multi runtime-link=$Env:BUILD_LINK_MODE variant=release install --prefix="$Env:INSTALL_DIR"
+          .\b2 --with-thread --with-json address-model=64 toolset=$Env:BUILD_TOOLSET link=$Env:BUILD_LINK_MODE threading=multi runtime-link=$Env:BUILD_LINK_MODE variant=release install --prefix="$Env:INSTALL_DIR"
 
       - name: Prepare Install Directory
         run: |
