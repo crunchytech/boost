@@ -9,6 +9,7 @@ env:
   GITHUB_REF_NAME: ${{ github.ref_name }}
   BUILD_TOOLSET: msvc-14.3
   BUILD_LINK_MODE: static
+  INSTALL_DIR: release
 
 jobs:
   Build-Static-Libs:
@@ -18,7 +19,7 @@ jobs:
         run: |
           echo ("BUILD_VER=" + $Env:GITHUB_REF_NAME.replace('build_', '')) >> $Env:GITHUB_ENV
 
-      - name: Show Me
+      - name: Build Version
         run: |
           echo "$Env:BUILD_VER"
 
@@ -41,17 +42,22 @@ jobs:
 
       - name: Build Boost
         run: |
-          .\b2 --with-thread address-model=64 toolset=$Env:BUILD_TOOLSET link=$Env:BUILD_LINK_MODE threading=multi runtime-link=$Env:BUILD_LINK_MODE variant=release stage
+          .\b2 --with-thread address-model=64 toolset=$Env:BUILD_TOOLSET link=$Env:BUILD_LINK_MODE threading=multi runtime-link=$Env:BUILD_LINK_MODE variant=release install --prefix="$Env:INSTALL_DIR"
 
+      - name: Prepare Install Directory
+        run: |
+          Move-Item -Path $Env:INSTALL_DIR\include\boost-*\boost -Destination $Env:INSTALL_DIR\include\boost
+          Remove-Item "$Env:INSTALL_DIR\include\boost-*" -Recurse
+      
       - name: List Files
         run: |
-          dir "."
-          dir ".\stage"
-          dir ".\stage\lib"
+          dir "$Env:INSTALL_DIR"
+          dir "$Env:INSTALL_DIR\include"
+          dir "$Env:INSTALL_DIR\lib"
 
       - name: Create Release Package (Zip)
         run: |
-          Compress-Archive -Path ".\stage\lib\*" -DestinationPath "boost-static-$Env:BUILD_VER.zip"
+          Compress-Archive -Path "$Env:INSTALL_DIR\*" -DestinationPath "boost-static-$Env:BUILD_VER.zip"
   
       - name: Publish Release
         run: |
